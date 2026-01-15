@@ -1,3 +1,4 @@
+Attribute VB_Name = "AlbumGeneratorWorkingInCurent"
 Option Explicit
 
 ' ================== Настройки ==================
@@ -463,46 +464,53 @@ Public Sub BuildAlbum_Enhanced(ByVal rootPath As String, ByVal objectName As Str
         Set folders = CollectFlatStructure(rootPath)
     End If
 
+    Dim ui As New frmProgress
+    ui.Init folders.Count
+    Dim folderIndex As Integer: folderIndex = 0
+    Dim onlyPhotos As Boolean: onlyPhotos = startUI.OnlyPhotos
 
-    Dim pg As Page
-    Set pg = EnsureNewPage(doc)
-    AddGuidesToPage pg
 
-    ' Вставляем стартовые подписи
-    Dim capsStart As Collection: Set capsStart = New Collection
-    capsStart.Add "Карта Пензенской области с обозначением участка исследования."
-    capsStart.Add "Карта Пензенского района с обозначением участка исследования. Выкопировка из топосновы."
-    capsStart.Add "Карта Пензенского района с обозначением участка исследования. Снимок со спутника."
-    capsStart.Add "Карта памятников археологии в районе участка исследования."
-    capsStart.Add "Обозначение участка исследования на «Старой карте 1"""
-    capsStart.Add "Обозначение участка исследования на «Старой карте 2"""
-    capsStart.Add "Обозначение участка исследования на «Старой карте 3"""
-    capsStart.Add "Ситуационный план расположения шурфов и точек фотофиксации. Выкопировка из топосновы."
-    capsStart.Add "Ситуационный план расположения шурфов и точек фотофиксации. Снимок со спутника."
-
-    Dim xLeftInch As Double, xRightInch As Double, captionTop As Double, captionBottom As Double
-    xLeftInch = MMtoDocUnits(V_GUIDE_LEFT)
-    xRightInch = MMtoDocUnits(V_GUIDE_RIGHT)
-    captionTop = MMtoDocUnits(H_GUIDE_BOTTOM)
-    captionBottom = captionTop - MMtoDocUnits(20)
-    If captionBottom < 0 Then captionBottom = 0
-
-    Dim i As Integer
-    For i = 1 To capsStart.Count
-        Dim txtLayer As Layer
-        Set txtLayer = GetOrCreateLayer(pg, "Text")
-        Dim fullCaption As String
-        fullCaption = "Илл. " & g_IllNumber & ". Археологические разведки на земельном участке, отведенном для расположения объекта: «" & g_ObjectName & "». " & capsStart(i)
-        Dim txt As Shape
-        Set txt = txtLayer.CreateParagraphText(xLeftInch, captionBottom, xRightInch, captionTop, fullCaption)
-        On Error Resume Next
-        txt.Text.Story.Font = CAPTION_FONT
-        txt.Text.Story.Size = CAPTION_SIZE
-        On Error GoTo 0
-        doc.ClearSelection
-        g_IllNumber = g_IllNumber + 1
+    If Not chkOnlyPhotos Then
+        Dim pg As Page
         Set pg = EnsureNewPage(doc)
-    Next i
+        AddGuidesToPage pg
+
+        ' Вставляем стартовые подписи
+        Dim capsStart As Collection: Set capsStart = New Collection
+        capsStart.Add "Карта Пензенской области с обозначением участка исследования."
+        capsStart.Add "Карта Пензенского района с обозначением участка исследования. Выкопировка из топосновы."
+        capsStart.Add "Карта Пензенского района с обозначением участка исследования. Снимок со спутника."
+        capsStart.Add "Карта памятников археологии в районе участка исследования."
+        capsStart.Add "Обозначение участка исследования на «Старой карте 1"""
+        capsStart.Add "Обозначение участка исследования на «Старой карте 2"""
+        capsStart.Add "Обозначение участка исследования на «Старой карте 3"""
+        capsStart.Add "Ситуационный план расположения шурфов и точек фотофиксации. Выкопировка из топосновы."
+        capsStart.Add "Ситуационный план расположения шурфов и точек фотофиксации. Снимок со спутника."
+
+        Dim xLeftInch As Double, xRightInch As Double, captionTop As Double, captionBottom As Double
+        xLeftInch = MMtoDocUnits(V_GUIDE_LEFT)
+        xRightInch = MMtoDocUnits(V_GUIDE_RIGHT)
+        captionTop = MMtoDocUnits(H_GUIDE_BOTTOM)
+        captionBottom = captionTop - MMtoDocUnits(20)
+        If captionBottom < 0 Then captionBottom = 0
+
+        Dim i As Integer
+        For i = 1 To capsStart.Count
+            Dim txtLayer As Layer
+            Set txtLayer = GetOrCreateLayer(pg, "Text")
+            Dim fullCaption As String
+            fullCaption = "Илл. " & g_IllNumber & ". Археологические разведки на земельном участке, отведенном для расположения объекта: «" & g_ObjectName & "». " & capsStart(i)
+            Dim txt As Shape
+            Set txt = txtLayer.CreateParagraphText(xLeftInch, captionBottom, xRightInch, captionTop, fullCaption)
+            On Error Resume Next
+            txt.Text.Story.Font = CAPTION_FONT
+            txt.Text.Story.Size = CAPTION_SIZE
+            On Error GoTo 0
+            doc.ClearSelection
+            g_IllNumber = g_IllNumber + 1
+            Set pg = EnsureNewPage(doc)
+        Next i        
+    End If
 
     Dim placeTop As Boolean: placeTop = True
     Dim files As Collection, captions As Collection
@@ -512,12 +520,7 @@ Public Sub BuildAlbum_Enhanced(ByVal rootPath As String, ByVal objectName As Str
     Dim fldPath As String
     Dim kvNum As String
     Dim folderDisplayName As String
-    
-    Dim ui As New frmProgress
-    ui.Init folders.Count
-    Dim folderIndex As Integer: folderIndex = 0
-    
-        
+  
     For Each fldInfo In folders
     
         If ui.Cancelled Then Exit For

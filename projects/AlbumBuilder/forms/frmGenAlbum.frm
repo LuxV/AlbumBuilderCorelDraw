@@ -13,6 +13,8 @@ Attribute VB_GlobalNameSpace = False
 Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = True
 Attribute VB_Exposed = False
+Option Explicit
+
 Private Sub btnBrowse_Click()
     Dim sh As Object
     Set sh = CreateObject("Shell.Application")
@@ -52,6 +54,10 @@ Private Sub btnStart_Click()
 
     ' Всё проверено, скрываем форму и запускаем обработку
     Me.Hide
-    BuildAlbum_Enhanced Trim(txtPath.Text), Trim(txtObjectName.Text)
+    BuildAlbum_Enhanced Trim(txtPath.Text), Trim(txtObjectName.Text), chkOnlyPhotos.Value
     Unload Me
+End Sub
+
+Private Sub UserForm_Click()
+
 End Sub
