@@ -437,7 +437,7 @@ End Function
 ' ================== Основная процедура: BuildAlbum_Enhanced ==================
 Public Sub BuildAlbum_Enhanced( ByVal rootPath As String, _
                                 ByVal objectName As String, _
-                                ByVal OnlyPhotos As Boolean _
+                                ByVal OnlyPhotos As Boolean, _
                                 ByVal StartIndex As Integer)
     
     If Dir(rootPath, vbDirectory) = "" Then
