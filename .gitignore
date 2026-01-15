@@ -1,0 +1,20 @@
+# --- Corel build artifacts ---
+**/build/
+
+# --- Corel binaries ---
+*.gsm
+
+# --- Temporary files ---
+*.tmp
+*.bak
+*.log
+
+# --- Windows ---
+Thumbs.db
+Desktop.ini
+
+# --- VS Code ---
+.vscode/
+
+# --- PowerShell temp ---
+*.psm1

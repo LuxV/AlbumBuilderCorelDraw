@@ -435,7 +435,7 @@ Function CollectFoldersForKvStructure(ByVal rootPath As String) As Collection
 End Function
 
 ' ================== Основная процедура: BuildAlbum_Enhanced ==================
-Public Sub BuildAlbum_Enhanced(ByVal rootPath As String, ByVal objectName As String)
+Public Sub BuildAlbum_Enhanced(ByVal rootPath As String, ByVal objectName As String,  ByVal OnlyPhotos As Boolean)
     
     If Dir(rootPath, vbDirectory) = "" Then
         MsgBox "Указанная папка не существует."
@@ -467,10 +467,10 @@ Public Sub BuildAlbum_Enhanced(ByVal rootPath As String, ByVal objectName As Str
     Dim ui As New frmProgress
     ui.Init folders.Count
     Dim folderIndex As Integer: folderIndex = 0
-    Dim onlyPhotos As Boolean: onlyPhotos = startUI.OnlyPhotos
 
-
-    If Not chkOnlyPhotos Then
+    OnlyPhotos = False 'заглушка из-за ошибки загруузки первых изображений
+    
+    If Not OnlyPhotos Then
         Dim pg As Page
         Set pg = EnsureNewPage(doc)
         AddGuidesToPage pg
