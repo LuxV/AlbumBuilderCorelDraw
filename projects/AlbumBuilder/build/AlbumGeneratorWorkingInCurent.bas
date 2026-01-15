@@ -468,12 +468,11 @@ Public Sub BuildAlbum_Enhanced(ByVal rootPath As String, ByVal objectName As Str
     ui.Init folders.Count
     Dim folderIndex As Integer: folderIndex = 0
 
-    OnlyPhotos = False 'заглушка из-за ошибки загруузки первых изображений
+    Dim pg As Page
+    Set pg = EnsureNewPage(doc)
+    AddGuidesToPage pg
     
     If Not OnlyPhotos Then
-        Dim pg As Page
-        Set pg = EnsureNewPage(doc)
-        AddGuidesToPage pg
 
         ' Вставляем стартовые подписи
         Dim capsStart As Collection: Set capsStart = New Collection

@@ -435,14 +435,18 @@ Function CollectFoldersForKvStructure(ByVal rootPath As String) As Collection
 End Function
 
 ' ================== Основная процедура: BuildAlbum_Enhanced ==================
-Public Sub BuildAlbum_Enhanced(ByVal rootPath As String, ByVal objectName As String,  ByVal OnlyPhotos As Boolean)
+Public Sub BuildAlbum_Enhanced( ByVal rootPath As String, _
+                                ByVal objectName As String, _
+                                ByVal OnlyPhotos As Boolean _
+                                ByVal StartIndex As Integer)
     
     If Dir(rootPath, vbDirectory) = "" Then
         MsgBox "Указанная папка не существует."
         Exit Sub
     End If
-    
-    
+
+    g_IllNumber = StartIndex
+
     Dim doc As Document
     Set doc = ActiveDocument
     Dim fso As Object
