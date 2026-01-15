@@ -57,7 +57,3 @@ Private Sub btnStart_Click()
     BuildAlbum_Enhanced Trim(txtPath.Text), Trim(txtObjectName.Text), chkOnlyPhotos.Value
     Unload Me
 End Sub
-
-Private Sub UserForm_Click()
-
-End Sub
