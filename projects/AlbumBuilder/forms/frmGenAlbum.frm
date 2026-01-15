@@ -52,8 +52,28 @@ Private Sub btnStart_Click()
         Exit Sub
     End If
 
+    
+    Dim StartIndex As Integer
+    StartIndex = CLng(Val(txtStartIndex.Text))
+    If StartIndex < 1 Then StartIndex = 1
+    
     ' Всё проверено, скрываем форму и запускаем обработку
     Me.Hide
-    BuildAlbum_Enhanced Trim(txtPath.Text), Trim(txtObjectName.Text), chkOnlyPhotos.Value
+    BuildAlbum_Enhanced Trim(txtPath.Text), Trim(txtObjectName.Text), chkOnlyPhotos.Value, StartIndex
     Unload Me
+End Sub
+
+Private Sub chkOnlyPhotos_Change()
+
+    lbStartIndex.Visible = chkOnlyPhotos.Value
+    txtStartIndex.Visible = chkOnlyPhotos.Value
+
+End Sub
+
+
+Private Sub UserForm_Initialize()
+
+    lbStartIndex.Visible = False
+    txtStartIndex.Visible = False
+
 End Sub
