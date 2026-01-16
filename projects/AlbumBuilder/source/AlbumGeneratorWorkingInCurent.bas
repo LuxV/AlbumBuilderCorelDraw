@@ -446,7 +446,7 @@ Public Sub BuildAlbum_Enhanced(ByVal rootPath As String, _
     End If
 
     g_IllNumber = StartIndex
-
+    g_ObjectName = objectName
     Dim doc As Document
     Set doc = ActiveDocument
     Dim fso As Object
