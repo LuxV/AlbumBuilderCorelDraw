@@ -404,7 +404,7 @@ Function CollectFoldersForKvStructure(ByVal rootPath As String) As Collection
                 For i = 0 To pCnt - 2
                     For j = i + 1 To pCnt - 1
                         Dim ni As Long, nj As Long
-                        ni = val(plastArr(i)(1)): nj = val(plastArr(j)(1))
+                        ni = Val(plastArr(i)(1)): nj = Val(plastArr(j)(1))
                         If ni > nj Then
                             tmp = plastArr(i): plastArr(i) = plastArr(j): plastArr(j) = tmp
                         End If
@@ -435,7 +435,7 @@ Function CollectFoldersForKvStructure(ByVal rootPath As String) As Collection
 End Function
 
 ' ================== Основная процедура: BuildAlbum_Enhanced ==================
-Public Sub BuildAlbum_Enhanced( ByVal rootPath As String, _
+Public Sub BuildAlbum_Enhanced(ByVal rootPath As String, _
                                 ByVal objectName As String, _
                                 ByVal OnlyPhotos As Boolean, _
                                 ByVal StartIndex As Integer)
@@ -512,7 +512,7 @@ Public Sub BuildAlbum_Enhanced( ByVal rootPath As String, _
             doc.ClearSelection
             g_IllNumber = g_IllNumber + 1
             Set pg = EnsureNewPage(doc)
-        Next i        
+        Next i
     End If
 
     Dim placeTop As Boolean: placeTop = True
