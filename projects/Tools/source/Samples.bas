@@ -236,7 +236,7 @@ Sub AddGuides_MM()
     If gLayer Is Nothing Then Set gLayer = pg.CreateLayer("Guides")
 
     ' Список позиций (в мм)
-    Dim posMM As Variant
+    Dim posMM_V As Variant, posMM_G As Variant
     posMM_V = Array(50, 100, 150)
     posMM_G = Array(50, 100, 150)
     Dim i As Long, posInch As Double
