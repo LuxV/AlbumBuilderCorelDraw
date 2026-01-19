@@ -16,5 +16,9 @@ Desktop.ini
 # --- VS Code ---
 .vscode/
 
+# инструкции для работы с макросами
+*.doc
+*.docx
+
 # --- PowerShell temp ---
 *.psm1
