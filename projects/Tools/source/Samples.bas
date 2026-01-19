@@ -226,7 +226,7 @@ Sub AddGuides_MM()
     Dim wMM As Double, hMM As Double
     wMM = DocUnitsToMM(wInch)
     hMM = DocUnitsToMM(hInch)
-    Debug.Print "Размер страницы: "; wMM & " ? " & hMM & " мм"
+    Debug.Print "Размер страницы: "; wMM & " X " & hMM & " мм"
 
     ' Находим слой направляющих
     Dim gLayer As Layer
@@ -237,19 +237,21 @@ Sub AddGuides_MM()
 
     ' Список позиций (в мм)
     Dim posMM As Variant
-    posMM = Array(50, 100, 150)
-
+    posMM_V = Array(50, 100, 150)
+    posMM_G = Array(50, 100, 150)
     Dim i As Long, posInch As Double
 
+    ' Начало координат - нижний левый угол
+    
     ' Вертикальные
-    For i = LBound(posMM) To UBound(posMM)
-        posInch = MMtoDocUnits(posMM(i))
+    For i = LBound(posMM_V) To UBound(posMM_V)
+        posInch = MMtoDocUnits(posMM_V(i))
         gLayer.CreateGuide posInch, 0, posInch, hInch
     Next i
 
     ' Горизонтальные
-    For i = LBound(posMM) To UBound(posMM)
-        posInch = MMtoDocUnits(posMM(i))
+    For i = LBound(posMM_G) To UBound(posMM_G)
+        posInch = MMtoDocUnits(posMM_G(i))
         gLayer.CreateGuide 0, posInch, wInch, posInch
     Next i
 
@@ -441,37 +443,4 @@ Sub CreateNumberedTextObjects()
     Next i
     
     MsgBox "Создано " & n & " объектов с числами от 1 до " & n
-End Sub
-
-
-Sub FindNumberBetweenPoints()
-    Dim inputStr As String
-    inputStr = "Илл. 123. какой-то еще текст 45456. 5454."
-    
-    Dim regEx As Object
-    Set regEx = CreateObject("VBScript.RegExp")
-    
-    Dim match As Object
-    Dim matches As Object
-    
-    regEx.Pattern = "\.\s*(\d+)\s*\."
-    regEx.Global = False
-    regEx.IgnoreCase = True
-    
-    If regEx.Test(inputStr) Then
-        Set matches = regEx.Execute(inputStr)
-        Set match = matches(0)
-        MsgBox "Найденное число: " & match.SubMatches(0)
-    Else
-        ' Попробуем найти число после точки (если второй точки нет)
-        regEx.Pattern = "\.\s*(\d+)\b"
-        If regEx.Test(inputStr) Then
-            Set matches = regEx.Execute(inputStr)
-            Set match = matches(0)
-            MsgBox "Найденное число: " & match.SubMatches(0)
-        Else
-            MsgBox "Число между точками не найдено"
-        End If
-    End If
-    
 End Sub
