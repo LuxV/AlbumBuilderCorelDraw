@@ -115,11 +115,11 @@ Function EnsureNewPage(doc As Document) As Page
 End Function
 
 ' ================== Вставка изображения + подпись ==================
-Sub PlaceImageWithCaption(  ByVal pg As Page,_ 
-                            ByVal filePath As String,_
-                            ByVal caption As String,_
-                            ByVal isTop As Boolean,_
-                            ByRef illNumber As Long,_
+Sub PlaceImageWithCaption(  ByVal pg As Page, _ 
+                            ByVal filePath As String, _
+                            ByVal caption As String, _
+                            ByVal isTop As Boolean, _
+                            ByRef illNumber As Integer, _
                             ByVal objectName As String)
     On Error GoTo ErrHandler
     Dim doc As Document: Set doc = ActiveDocument
@@ -457,6 +457,8 @@ Public Sub BuildAlbum(  ByVal rootPath As String, _
         Exit Sub
     End If
 
+    Dim illNumber As Integer
+    illNumber = startIndex    
     Dim doc As Document
     Set doc = ActiveDocument
     Dim fso As Object
@@ -512,7 +514,7 @@ Public Sub BuildAlbum(  ByVal rootPath As String, _
             Dim txtLayer As Layer
             Set txtLayer = GetOrCreateLayer(pg, "Text")
             Dim fullCaption As String
-            fullCaption = "Илл. " & startIndex & ". Археологические разведки на земельном участке, отведенном для расположения объекта: «" & ObjectName & "». " & capsStart(i)
+            fullCaption = "Илл. " & illNumber & ". Археологические разведки на земельном участке, отведенном для расположения объекта: «" & ObjectName & "». " & capsStart(i)
             Dim txt As Shape
             Set txt = txtLayer.CreateParagraphText(xLeftInch, captionBottom, xRightInch, captionTop, fullCaption)
             On Error Resume Next
@@ -520,7 +522,7 @@ Public Sub BuildAlbum(  ByVal rootPath As String, _
             txt.Text.Story.Size = CAPTION_SIZE
             On Error GoTo 0
             doc.ClearSelection
-            startIndex = startIndex + 1
+            illNumber = illNumber + 1
             Set pg = EnsureNewPage(doc)
         Next i
     End If
@@ -596,7 +598,7 @@ Public Sub BuildAlbum(  ByVal rootPath As String, _
         
             If ui.Cancelled Then Exit For
         
-            PlaceImageWithCaption pg, files(i), captions(i), placeTop startIndex objectName
+            PlaceImageWithCaption pg, files(i), captions(i), placeTop, illNumber, objectName
             
             fileIndex = fileIndex + 1
             ui.UpdateFiles fileIndex, files.Count
@@ -613,7 +615,7 @@ NextFolder:
     Next fldInfo
 
 
-    MsgBox "Альбом создан. Всего иллюстраций: " & (startIndex - 1), vbInformation
+    MsgBox "Альбом создан. Всего иллюстраций: " & (illNumber - 1), vbInformation
     If ui.Cancelled Then
         MsgBox "Операция отменена пользователем."
     End If
