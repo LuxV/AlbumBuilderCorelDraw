@@ -40,17 +40,29 @@ Function GetOrCreateLayer(ByVal pg As Page, ByVal layerName As String) As Layer
 End Function
 
 Private Function ExtractDigits(ByVal s As String) As String
-    Dim i As Long, ch As String, out As String
+    Dim i As Long, ch As String
+    Dim out As String
+    
+    out = ""
+    
     For i = 1 To Len(s)
         ch = Mid$(s, i, 1)
+        
         If ch Like "[0-9]" Then
             out = out & ch
         ElseIf Len(out) > 0 Then
             Exit For
         End If
     Next i
+    
+    ' Удаляем ведущие нули, если есть
+    Do While Len(out) > 1 And Left$(out, 1) = "0"
+        out = Mid$(out, 2)
+    Loop
+    
     ExtractDigits = out
 End Function
+
 
 Function DetectFolderStructure(ByVal rootPath As String) As String
     Dim fso As Object, rootFld As Object, fld As Object
