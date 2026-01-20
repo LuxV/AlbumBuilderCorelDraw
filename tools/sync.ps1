@@ -7,6 +7,7 @@ Remove-Item "$p\build" -Recurse -Force -ErrorAction SilentlyContinue
 New-Item "$p\build" -ItemType Directory | Out-Null
 
 Copy-Item "$p\source\*.bas" "$p\build" -Force
+Copy-Item "$p\source\*.cls" "$p\build" -Force
 Copy-Item "$p\forms\*.frm" "$p\build" -Force
 Copy-Item "$p\forms\*.frx" "$p\build" -Force
 
