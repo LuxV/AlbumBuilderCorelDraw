@@ -115,16 +115,14 @@ Function EnsureNewPage(doc As Document) As Page
 End Function
 
 ' ================== Вставка изображения + подпись ==================
-Sub PlaceImageWithCaption(  ByVal pg As Page, _ 
+Sub PlaceImageWithCaption(  ByRef ctx As clsAlbumContext, _
                             ByVal filePath As String, _
                             ByVal caption As String, _
-                            ByVal isTop As Boolean, _
-                            ByRef illNumber As Integer, _
-                            ByVal objectName As String)
+                            ByVal isTop As Boolean)
     On Error GoTo ErrHandler
-    Dim doc As Document: Set doc = ActiveDocument
+
     Dim imgLayer As Layer
-    Set imgLayer = GetOrCreateLayer(pg, "Images")
+    Set imgLayer = GetOrCreateLayer(ctx.currentPage, "Images")
 
     ' Попытка подавить всплывающие окна при импорте
     On Error Resume Next
@@ -140,7 +138,7 @@ Sub PlaceImageWithCaption(  ByVal pg As Page, _
     On Error GoTo ErrHandler
 
     Dim sr As ShapeRange
-    Set sr = doc.SelectionRange
+    Set sr = ctx.doc.SelectionRange
     If sr Is Nothing Or sr.Count = 0 Then
         Err.Raise vbObjectError + 1000, , "Не удалось получить импортированный объект: " & filePath
     End If
@@ -166,15 +164,15 @@ Sub PlaceImageWithCaption(  ByVal pg As Page, _
 
     Dim bottomY As Double
     Dim prevRef As Long
-    prevRef = doc.ReferencePoint
-    doc.ReferencePoint = cdrBottomLeft
+    prevRef = ctx.doc.ReferencePoint
+    ctx.doc.ReferencePoint = cdrBottomLeft
     If isTop Then
         bottomY = yTopInch - s.SizeHeight
     Else
         bottomY = yBottomInch
     End If
     s.SetPosition leftX, bottomY
-    doc.ReferencePoint = prevRef
+    ctx.doc.ReferencePoint = prevRef
 
     ' Подпись
     Dim captionTop As Double, captionBottom As Double
@@ -183,9 +181,9 @@ Sub PlaceImageWithCaption(  ByVal pg As Page, _
     If captionBottom < 0 Then captionBottom = 0
 
     Dim txtLayer As Layer
-    Set txtLayer = GetOrCreateLayer(pg, "Text")
+    Set txtLayer = GetOrCreateLayer(ctx.currentPage, "Text")
     Dim fullCaption As String
-    fullCaption = "Илл. " & illNumber & ". Археологические разведки на земельном участке, отведенном для расположения объекта: «" & objectName & "». " & caption
+    fullCaption = "Илл. " & ctx.IllNumber & ". Археологические разведки на земельном участке, отведенном для расположения объекта: «" & ctx.objectName & "». " & caption
 
     Dim txt As Shape
     Set txt = txtLayer.CreateParagraphText(xLeftInch, captionBottom, xRightInch, captionTop, fullCaption)
@@ -199,10 +197,10 @@ Sub PlaceImageWithCaption(  ByVal pg As Page, _
     On Error GoTo ErrHandler
 
     On Error Resume Next
-    doc.ClearSelection
+    ctx.doc.ClearSelection
     On Error GoTo ErrHandler
 
-    illNumber = illNumber + 1
+    ctx.illNumber = ctx.illNumber + 1
     Exit Sub
 
 ErrHandler:
@@ -457,22 +455,26 @@ Public Sub BuildAlbum(  ByVal rootPath As String, _
         Exit Sub
     End If
 
-    Dim illNumber As Integer
-    illNumber = startIndex    
-    Dim doc As Document
-    Set doc = ActiveDocument
     Dim fso As Object
     Set fso = CreateObject("Scripting.FileSystemObject")
-    
-    If doc Is Nothing Then
-        MsgBox "Откройте документ CorelDRAW перед запуском.", vbExclamation
-        Exit Sub
-    End If
 
     Dim folders As Collection
     Dim structureType As String
     
     structureType = DetectFolderStructure(rootPath)
+
+    Dim ctx As clsAlbumContext
+    Set ctx = New clsAlbumContext
+
+    If ActiveDocument Is Nothing Then
+        MsgBox "Откройте документ CorelDRAW перед запуском.", vbExclamation
+        Exit Sub
+    End If
+
+    ctx.Init ActiveDocument, objectName, startIndex, structureType, onlyPhotos
+
+    Set ctx.currentPage = EnsureNewPage(ctx.doc)    
+    AddGuidesToPage ctx.currentPage   
     
     If structureType = "KV" Then
         Set folders = CollectFoldersForKvStructure(rootPath)
@@ -484,10 +486,6 @@ Public Sub BuildAlbum(  ByVal rootPath As String, _
     ui.Init folders.Count
     Dim folderIndex As Integer: folderIndex = 0
 
-    Dim pg As Page
-    Set pg = EnsureNewPage(doc)
-    AddGuidesToPage pg
-    
     If Not onlyPhotos Then
 
         ' Вставляем стартовые подписи
@@ -512,18 +510,18 @@ Public Sub BuildAlbum(  ByVal rootPath As String, _
         Dim i As Integer
         For i = 1 To capsStart.Count
             Dim txtLayer As Layer
-            Set txtLayer = GetOrCreateLayer(pg, "Text")
+            Set txtLayer = GetOrCreateLayer(ctx.currentPage , "Text")
             Dim fullCaption As String
-            fullCaption = "Илл. " & illNumber & ". Археологические разведки на земельном участке, отведенном для расположения объекта: «" & ObjectName & "». " & capsStart(i)
+            fullCaption = "Илл. " & ctx.illNumber & ". Археологические разведки на земельном участке, отведенном для расположения объекта: «" & ctx.ObjectName & "». " & capsStart(i)
             Dim txt As Shape
             Set txt = txtLayer.CreateParagraphText(xLeftInch, captionBottom, xRightInch, captionTop, fullCaption)
             On Error Resume Next
             txt.Text.Story.Font = CAPTION_FONT
             txt.Text.Story.Size = CAPTION_SIZE
             On Error GoTo 0
-            doc.ClearSelection
-            illNumber = illNumber + 1
-            Set pg = EnsureNewPage(doc)
+            ctx.doc.ClearSelection
+            ctx.illNumber = ctx.illNumber + 1
+            Set ctx.currentPage  = EnsureNewPage(ctx.doc)
         Next i
     End If
 
@@ -598,7 +596,7 @@ Public Sub BuildAlbum(  ByVal rootPath As String, _
         
             If ui.Cancelled Then Exit For
         
-            PlaceImageWithCaption pg, files(i), captions(i), placeTop, illNumber, objectName
+            PlaceImageWithCaption ctx, files(i), captions(i), placeTop
             
             fileIndex = fileIndex + 1
             ui.UpdateFiles fileIndex, files.Count
@@ -606,7 +604,7 @@ Public Sub BuildAlbum(  ByVal rootPath As String, _
             If placeTop Then
                 placeTop = False
             Else
-                Set pg = EnsureNewPage(doc)
+                Set ctx.currentPage  = EnsureNewPage(ctx.doc)
                 placeTop = True
             End If
         Next i
@@ -615,7 +613,7 @@ NextFolder:
     Next fldInfo
 
 
-    MsgBox "Альбом создан. Всего иллюстраций: " & (illNumber - 1), vbInformation
+    MsgBox "Альбом создан. Всего иллюстраций: " & (ctx.illNumber - 1), vbInformation
     If ui.Cancelled Then
         MsgBox "Операция отменена пользователем."
     End If
