@@ -59,7 +59,7 @@ Private Sub btnStart_Click()
     
     ' Всё проверено, скрываем форму и запускаем обработку
     Me.Hide
-    BuildAlbum_Enhanced Trim(txtPath.Text), Trim(txtObjectName.Text), chkOnlyPhotos.Value, StartIndex
+    BuildAlbum Trim(txtPath.Text), Trim(txtObjectName.Text), chkOnlyPhotos.Value, StartIndex
     Unload Me
 End Sub
 

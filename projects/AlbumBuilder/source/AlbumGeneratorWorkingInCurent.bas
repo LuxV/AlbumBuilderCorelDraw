@@ -11,11 +11,6 @@ Private Const IMAGE_TARGET_WIDTH As Double = 170   ' мм по ширине
 Private Const CAPTION_FONT As String = "Times New Roman"
 Private Const CAPTION_SIZE As Double = 11
 
-' Глобальные (как раньше)
-Public g_IllNumber As Long
-Public g_ObjectName As String
-Public g_DocGuidesSupported As Boolean
-
 ' ================== Утилиты ==================
 Function MMtoDocUnits(ByVal mm As Double) As Double
     MMtoDocUnits = mm / 25.4
@@ -120,7 +115,12 @@ Function EnsureNewPage(doc As Document) As Page
 End Function
 
 ' ================== Вставка изображения + подпись ==================
-Sub PlaceImageWithCaption(ByVal pg As Page, ByVal filePath As String, ByVal caption As String, ByVal isTop As Boolean)
+Sub PlaceImageWithCaption(  ByVal pg As Page, _ 
+                            ByVal filePath As String, _
+                            ByVal caption As String, _
+                            ByVal isTop As Boolean, _
+                            ByRef illNumber As Integer, _
+                            ByVal objectName As String)
     On Error GoTo ErrHandler
     Dim doc As Document: Set doc = ActiveDocument
     Dim imgLayer As Layer
@@ -185,7 +185,7 @@ Sub PlaceImageWithCaption(ByVal pg As Page, ByVal filePath As String, ByVal capt
     Dim txtLayer As Layer
     Set txtLayer = GetOrCreateLayer(pg, "Text")
     Dim fullCaption As String
-    fullCaption = "Илл. " & g_IllNumber & ". Археологические разведки на земельном участке, отведенном для расположения объекта: «" & g_ObjectName & "». " & caption
+    fullCaption = "Илл. " & illNumber & ". Археологические разведки на земельном участке, отведенном для расположения объекта: «" & objectName & "». " & caption
 
     Dim txt As Shape
     Set txt = txtLayer.CreateParagraphText(xLeftInch, captionBottom, xRightInch, captionTop, fullCaption)
@@ -202,7 +202,7 @@ Sub PlaceImageWithCaption(ByVal pg As Page, ByVal filePath As String, ByVal capt
     doc.ClearSelection
     On Error GoTo ErrHandler
 
-    g_IllNumber = g_IllNumber + 1
+    illNumber = illNumber + 1
     Exit Sub
 
 ErrHandler:
@@ -446,19 +446,19 @@ Function CollectFoldersForKvStructure(ByVal rootPath As String) As Collection
     Set CollectFoldersForKvStructure = col
 End Function
 
-' ================== Основная процедура: BuildAlbum_Enhanced ==================
-Public Sub BuildAlbum_Enhanced(ByVal rootPath As String, _
-                                ByVal objectName As String, _
-                                ByVal OnlyPhotos As Boolean, _
-                                ByVal StartIndex As Integer)
+' ================== Основная процедура: BuildAlbum ==================
+Public Sub BuildAlbum(  ByVal rootPath As String, _
+                        ByVal objectName As String, _
+                        ByVal onlyPhotos As Boolean, _
+                        ByVal startIndex As Integer)
     
     If Dir(rootPath, vbDirectory) = "" Then
         MsgBox "Указанная папка не существует."
         Exit Sub
     End If
 
-    g_IllNumber = StartIndex
-    g_ObjectName = objectName
+    Dim illNumber As Integer
+    illNumber = startIndex    
     Dim doc As Document
     Set doc = ActiveDocument
     Dim fso As Object
@@ -488,7 +488,7 @@ Public Sub BuildAlbum_Enhanced(ByVal rootPath As String, _
     Set pg = EnsureNewPage(doc)
     AddGuidesToPage pg
     
-    If Not OnlyPhotos Then
+    If Not onlyPhotos Then
 
         ' Вставляем стартовые подписи
         Dim capsStart As Collection: Set capsStart = New Collection
@@ -514,7 +514,7 @@ Public Sub BuildAlbum_Enhanced(ByVal rootPath As String, _
             Dim txtLayer As Layer
             Set txtLayer = GetOrCreateLayer(pg, "Text")
             Dim fullCaption As String
-            fullCaption = "Илл. " & g_IllNumber & ". Археологические разведки на земельном участке, отведенном для расположения объекта: «" & g_ObjectName & "». " & capsStart(i)
+            fullCaption = "Илл. " & illNumber & ". Археологические разведки на земельном участке, отведенном для расположения объекта: «" & ObjectName & "». " & capsStart(i)
             Dim txt As Shape
             Set txt = txtLayer.CreateParagraphText(xLeftInch, captionBottom, xRightInch, captionTop, fullCaption)
             On Error Resume Next
@@ -522,7 +522,7 @@ Public Sub BuildAlbum_Enhanced(ByVal rootPath As String, _
             txt.Text.Story.Size = CAPTION_SIZE
             On Error GoTo 0
             doc.ClearSelection
-            g_IllNumber = g_IllNumber + 1
+            illNumber = illNumber + 1
             Set pg = EnsureNewPage(doc)
         Next i
     End If
@@ -598,7 +598,7 @@ Public Sub BuildAlbum_Enhanced(ByVal rootPath As String, _
         
             If ui.Cancelled Then Exit For
         
-            PlaceImageWithCaption pg, files(i), captions(i), placeTop
+            PlaceImageWithCaption pg, files(i), captions(i), placeTop, illNumber, objectName
             
             fileIndex = fileIndex + 1
             ui.UpdateFiles fileIndex, files.Count
@@ -615,7 +615,7 @@ NextFolder:
     Next fldInfo
 
 
-    MsgBox "Альбом создан. Всего иллюстраций: " & (g_IllNumber - 1), vbInformation
+    MsgBox "Альбом создан. Всего иллюстраций: " & (illNumber - 1), vbInformation
     If ui.Cancelled Then
         MsgBox "Операция отменена пользователем."
     End If
