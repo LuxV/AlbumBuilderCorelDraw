@@ -10,6 +10,7 @@ Private Const H_GUIDE_TOP As Double = 280
 
 Private Const IMAGE_TARGET_WIDTH As Double = 170
 
+
 Sub ReplaceIllWithNumber_TopDownSorted()
     Dim pg As Page, sh As Shape
     Dim regEx As Object
@@ -286,9 +287,13 @@ Function PlaceParagraphTextMM(pg As Page, ByVal txt As String, _
     ' Слой для текста
     Dim lyr As Layer
     Set lyr = GetOrCreateLayer(pg, "Text")
+    
+    Const TargetFont = "Times New Roman"
+    Const TargetSize = 11
 
     ' Создаём параграфный текст
-    Set PlaceParagraphTextMM = lyr.CreateParagraphText(x1Inch, y1Inch, x2Inch, y2Inch, txt)
+    'Set PlaceParagraphTextMM = lyr.CreateParagraphText(x1Inch, y1Inch, x2Inch, y2Inch, txt)
+    Set PlaceParagraphTextMM = lyr.CreateArtisticText(x1Inch, y1Inch, txt, , , TargetFont, TargetSize)
 End Function
 
 
@@ -434,13 +439,58 @@ Sub CreateNumberedTextObjects()
     
     For i = 1 To n
          
-         ' Пример: текстовый блок 60x20 мм внизу страницы
-         PlaceParagraphTextMM pg, _
-             "Шурф №" & i & vbCrLf & ". Археологическое исследование", _
-             x, y, 60, 20
+        ' Пример: текстовый блок 60x20 мм внизу страницы
+        'PlaceParagraphTextMM pg, _
+        '     "Шурф №" & i & vbCrLf & ". Археологическое исследование", _
+        '     x, y, 60, 20
+             
+        PlaceParagraphTextMM pg, _
+             i, _
+             x, y, 3, 5
          
             y = y + 25 ' шаг по вертикали
     Next i
     
     MsgBox "Создано " & n & " объектов с числами от 1 до " & n
+End Sub
+
+Sub ScaleRasterByReferenceLine()
+
+    Dim sr As ShapeRange
+    Set sr = ActiveSelectionRange
+
+    If sr.Count <> 2 Then Exit Sub
+
+    Dim refLine As Shape
+    Dim raster As Shape
+
+    If sr(1).Type = cdrCurveShape Then
+        Set refLine = sr(1)
+        Set raster = sr(2)
+    Else
+        Set refLine = sr(2)
+        Set raster = sr(1)
+    End If
+
+    If raster.Type <> cdrBitmapShape Then Exit Sub
+
+    Dim realLenMM As Double
+    realLenMM = CDbl(InputBox("Реальная длина линейки, мм"))
+
+    Dim currentLen As Double
+     
+    currentLen = Sqr(refLine.SizeWidth ^ 2 + refLine.SizeHeight ^ 2)
+    
+    Dim targetLen As Double
+    targetLen = ActiveDocument.ToUnits(realLenMM, cdrMillimeter)
+
+    Dim scaleFactor As Double
+    scaleFactor = targetLen / currentLen * 100
+
+    Dim newW As Double, newH As Double
+    newW = raster.SizeWidth * scaleFactor / 100
+    newH = raster.SizeHeight * scaleFactor / 100
+
+    raster.SetSize newW, newH
+
 End Sub
